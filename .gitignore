@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+venv/
+.venv/
+env/
+
+.DS_Store
+.vscode/
+.idea/
+
+writeup/writeup.html
+writeup/build_pdf.sh
