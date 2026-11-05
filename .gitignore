@@ -12,3 +12,7 @@ env/
 
 writeup/writeup.html
 writeup/build_pdf.sh
+
+presentation/build_presentation.py
+presentation/Knuth_Plass_Presentation_Script.docx
+presentation/Knuth_Plass_Presentation_Script.txt
