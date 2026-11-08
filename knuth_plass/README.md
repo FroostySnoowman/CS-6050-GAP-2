@@ -39,6 +39,18 @@ Ties are possible, so the breaks themselves aren't compared. Timings go to
 `results.csv`. When `--width` is used, the line-width results go to `width.csv`
 and active nodes by position in the paragraph go to `startup.csv`.
 
+## Worked example
+
+```
+python worked_example.py
+```
+
+This prints the worked example in the write-up. It applies the recurrence
+directly, trying every legal predecessor break and every fitness class, and
+shows every candidate for each DP entry, the minimum and its predecessor, and
+the traceback to the final line breaks. It then checks that the answer matches
+`break_paragraph` and a search over every possible set of breaks.
+
 ## Test cases
 
 `tests/caseNN.txt` holds one paragraph of 2^(NN+10) words, so 2,048 for case 1

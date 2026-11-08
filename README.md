@@ -67,6 +67,7 @@ knuth_plass/
     generate_tests.py    makes tests/case01..case10.txt
     run_tests.py         checks + times the 10 cases -> results.csv
     test_knuth_plass.py  unit tests (edge cases, randomized checks)
+    worked_example.py    prints the worked example in the write-up
     tests/               the 10 test case files
     README.md
 make_plots.py            figure for the write-up

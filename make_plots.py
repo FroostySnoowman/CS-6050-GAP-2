@@ -35,7 +35,7 @@ def style_axes(ax):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
         ax.spines[side].set_color("#b9b8b2")
-    ax.tick_params(colors=INK2, labelsize=8)
+    ax.tick_params(colors=INK2, labelsize=7)
     ax.xaxis.label.set_color(INK)
     ax.yaxis.label.set_color(INK)
 
@@ -65,7 +65,7 @@ def label_ref_lines(ax, lines, x, t):
         angle = math.degrees(math.atan2(p1[1] - p0[1], p1[0] - p0[0]))
         below = g(x[0]) < t[0]
         ax.annotate(lab, (xl, g(xl)), xytext=(0, -3 if below else 3),
-                    textcoords="offset points", fontsize=7.5, color=INK2,
+                    textcoords="offset points", fontsize=7, color=INK2,
                     rotation=angle, rotation_mode="anchor", ha="left",
                     va="top" if below else "bottom")
 
@@ -82,17 +82,18 @@ def main():
     ratio = t / (c * f(x))
     slope_all = np.polyfit(np.log(x), np.log(t), 1)[0]
 
-    # one page limit, so the width panel goes beside the other two
-    fig = plt.figure(figsize=(7.2, 2.5))
-    grid = fig.add_gridspec(2, 2, height_ratios=[2.5, 1], width_ratios=[1.2, 1])
-    ax = fig.add_subplot(grid[0, 0])
-    ax2 = fig.add_subplot(grid[1, 0])
-    ax3 = fig.add_subplot(grid[:, 1])
+    # one page limit, so the panels are stacked to sit in a column beside the text
+    fig = plt.figure(figsize=(3.6, 3.95), layout="constrained")
+    outer = fig.add_gridspec(2, 1, height_ratios=[2.95, 2.1])
+    top = outer[0].subgridspec(2, 1, height_ratios=[2.15, 0.8], hspace=0.04)
+    ax = fig.add_subplot(top[0])
+    ax2 = fig.add_subplot(top[1])
+    ax3 = fig.add_subplot(outer[1])
 
     xx = np.geomspace(x[0] / 1.3, x[-1] * 1.3, 200)
     ref_lines = []
-    for g, lab, pos in [(lambda v: v ** 1.25, r"$B^{1.25}$", 0.14),
-                        (lambda v: v * np.log2(v), r"$B\log B$", 0.42)]:
+    for g, lab, pos in [(lambda v: v ** 1.25, r"$B^{1.25}$", 0.2),
+                        (lambda v: v * np.log2(v), r"$B\log B$", 0.3)]:
         k = t[-1] / g(x[-1])
         ax.plot(xx, k * g(xx), color=OTHER, lw=1.0, ls=(0, (4, 3)), zorder=1)
         ref_lines.append((lambda v, g=g, k=k: k * g(v), lab, pos))
@@ -102,17 +103,18 @@ def main():
             label="measured (min of runs)")
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_ylim(t.min() / 9, t.max() * 8)  # room for the legend, note and labels
     ax.yaxis.set_major_formatter(FuncFormatter(seconds_fmt))
-    ax.set_ylabel("runtime", fontsize=8.5)
+    ax.set_ylabel("runtime", fontsize=7.5)
     style_axes(ax)
     ax.tick_params(labelbottom=False)
-    ax.legend(loc="upper left", fontsize=7.5, frameon=False, labelcolor=INK)
-    ax.set_title("Knuth-Plass: runtime vs. input size", loc="left",
-                 fontsize=9.5, color=INK, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=6.8, frameon=False, labelcolor=INK)
+    ax.set_title("Runtime vs. input size", loc="left",
+                 fontsize=8.5, color=INK, fontweight="bold")
     note = (f"log-log slope, 5 largest: {slope:.3f}\n"
             f"log-log slope, all 10: {slope_all:.3f}")
     ax.text(0.98, 0.04, note, transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=7.5, color=INK2, linespacing=1.4)
+            fontsize=6.8, color=INK2, linespacing=1.4)
 
     ax2.axhline(1.0, color=THEORY, lw=1.2, zorder=1)
     ax2.axhspan(0.9, 1.1, color=THEORY, alpha=0.08, lw=0, zorder=0)
@@ -122,11 +124,11 @@ def main():
     ax2.set_xlim(ax.get_xlim())
     lo, hi = min(ratio.min(), 0.8), max(ratio.max(), 1.2)
     ax2.set_ylim(lo - 0.05, hi + 0.05)
-    ax2.set_ylabel(r"T / (c$\cdot$B$\cdot$W)", fontsize=8)
-    ax2.set_xlabel("legal breakpoints B (the 10 test cases)", fontsize=8.5)
+    ax2.set_ylabel(r"T / (c$\cdot$B$\cdot$W)", fontsize=7)
+    ax2.set_xlabel("legal breakpoints B (the 10 test cases)", fontsize=7.5)
     style_axes(ax2)
     ax2.text(0.98, 0.08, "shaded band = ±10%", transform=ax2.transAxes,
-             ha="right", va="bottom", fontsize=7, color=INK2)
+             ha="right", va="bottom", fontsize=6.5, color=INK2)
 
     wrows = read_csv(os.path.join(HERE, "knuth_plass", "width.csv"))
     wx = np.array([float(r["W"]) for r in wrows])
@@ -151,17 +153,20 @@ def main():
     ax3.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
     ax3.xaxis.set_minor_locator(NullLocator())
     ax3.yaxis.set_major_formatter(FuncFormatter(seconds_fmt))
-    ax3.set_ylim(top=wt.max() * 7)  # room for the legend
-    ax3.set_xlabel(f"words per line W (case 5, B = {wb:,.0f})", fontsize=8.5)
+    ax3.set_ylim(wt0.min() / 4, wt.max() * 7)  # room for the legend and note
+    ax3.set_ylabel("runtime", fontsize=7.5)
+    ax3.set_xlabel(f"words per line W (case 5, B = {wb:,.0f})", fontsize=7.5)
     style_axes(ax3)
-    ax3.legend(loc="upper left", fontsize=7.5, frameon=False, labelcolor=INK)
-    ax3.set_title("Runtime vs. line width", loc="left", fontsize=9.5, color=INK,
+    ax3.legend(loc="upper left", fontsize=6.8, frameon=False, labelcolor=INK)
+    ax3.set_title("Runtime vs. line width", loc="left", fontsize=8.5, color=INK,
                   fontweight="bold")
     ax3.text(0.98, 0.04, f"slope, W ≥ {LONG_W}: {wslope:.3f}\nslope, all: {wslope_all:.3f}\n"
              rf"slope, $\gamma$ = 0: {wslope0:.3f}", transform=ax3.transAxes, ha="right",
-             va="bottom", fontsize=7.5, color=INK2, linespacing=1.4)
+             va="bottom", fontsize=6.8, color=INK2, linespacing=1.4)
 
-    fig.tight_layout(pad=0.3, h_pad=0.5, w_pad=1.2)
+    fig.get_layout_engine().set(h_pad=0.03, hspace=0.04)
+    fig.canvas.draw()
+    fig.set_layout_engine("none")  # freeze the layout so the label angles stay right
     label_ref_lines(ax, ref_lines, x, t)
     os.makedirs(FIG_DIR, exist_ok=True)
     for ext in ("svg", "png"):
